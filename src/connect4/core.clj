@@ -33,6 +33,21 @@
   [current-grid]
   (draw-row current-grid 0))
 
+(defn set-cell-value
+  [current-grid [x y] value]
+   )
+
+(defn drop-piece 
+  [current-grid x value]
+  (loop [y num-rows]
+    (cond (= -1 y) (throw exception)
+          (zero? (get-cell-value [x y])) (set-cell-value current-grid [x y] value)
+          :else (recur (dec y)))))
+
+(defn column-open?
+  [current-grid x]
+  (zero? (get-cell-value current-grid [x 0])))
+
 (defn -main [& args]
   (draw-grid grid))
 
