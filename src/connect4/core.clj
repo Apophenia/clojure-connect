@@ -8,8 +8,7 @@
 
 (def num-columns 7)
 
-(def grid 
-  (vec (repeat num-rows (vec (repeat num-columns -1)))))
+(def grid (atom (vec (repeat num-rows (vec (repeat num-columns 1))))))
 
 (defn get-cell-value 
   [current-grid [x y]]
@@ -25,7 +24,7 @@
 (defn draw-row
   [current-grid n]
  (if (not= n num-rows) 
-  (do (draw-cells (grid n) 0)
+  (do (draw-cells (current-grid n) 0)
       (println)
       (recur current-grid (inc n)))))
 
@@ -40,14 +39,14 @@
 (defn drop-piece 
   [current-grid x value]
   (loop [y num-rows]
-    (cond (= -1 y) (throw exception)
+    (cond (= -1 y) (throw (Exception. "Passed a non-playable column to drop-piece."))
           (zero? (get-cell-value [x y])) (set-cell-value current-grid [x y] value)
           :else (recur (dec y)))))
 
 (defn column-open?
   [current-grid x]
-  (zero? (get-cell-value current-grid [x 0])))
+  (zero? (get-cell-value @current-grid [x 0])))
 
 (defn -main [& args]
-  (draw-grid grid))
+  (draw-grid @grid))
 
