@@ -34,7 +34,7 @@
 
 (defn set-cell-value
   [current-grid [x y] value]
-   )
+   (swap! current-grid assoc-in [x y] value))
 
 (defn drop-piece 
   [current-grid x value]
@@ -48,5 +48,8 @@
   (zero? (get-cell-value @current-grid [x 0])))
 
 (defn -main [& args]
+  (draw-grid @grid)
+  (println (get-cell-value @grid [2 2]))
+  (set-cell-value grid [2 2] 0)
+  (println (get-cell-value @grid [2 2]))
   (draw-grid @grid))
-
