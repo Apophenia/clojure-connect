@@ -8,7 +8,7 @@
 
 (def num-columns 7)
 
-(def grid (atom (vec (repeat num-rows (vec (repeat num-columns 1))))))
+(def grid (atom (vec (repeat num-rows (vec (repeat num-columns 0))))))
 
 (defn get-cell-value 
   [current-grid [x y]]
@@ -39,17 +39,44 @@
 (defn drop-piece 
   [current-grid x value]
   (loop [y num-rows]
-    (cond (= -1 y) (throw (Exception. "Passed a non-playable column to drop-piece."))
-          (zero? (get-cell-value [x y])) (set-cell-value current-grid [x y] value)
+    (cond ((= -1 y) (throw (Exception. "Passed a non-playable column to drop-piece."))
+          (zero? (get-cell-value current-grid [x y])) (set-cell-value current-grid [x y] value)
           :else (recur (dec y)))))
 
 (defn column-open?
   [current-grid x]
   (zero? (get-cell-value @current-grid [x 0])))
 
+(defn game-over? [current-grid]
+  true)
+
+(defprotocol Player
+  "This defines a way to make a move in the game."
+  (make-move [player-type current-grid]))
+
+(defrecord HumanPlayer [player-name value]
+  Player
+  (make-move [player-type current-grid] 0))
+
+(defrecord ComputerPlayer [value]
+  Player
+  (make-move [player-type current-grid] 0))
+
+(defn game-loop [player-one player-two]
+  (loop [current-player player-one
+         other-player player-two]
+    (drop-piece @grid (make-move current-player @grid) (:value current-player))
+    (if (game-over? @grid) 
+      (println "The game is over")
+      (recur other-player current-player))))
+
 (defn -main [& args]
-  (draw-grid @grid)
+  (let [human (HumanPlayer. "Lyndsey" 1)
+        computer (ComputerPlayer. -1)]
+    (game-loop human computer)))
+
+  (comment (draw-grid @grid)
   (println (get-cell-value @grid [2 2]))
-  (set-cell-value grid [2 2] 0)
+  (set-cell-value grid [2 2] 1)
   (println (get-cell-value @grid [2 2]))
   (draw-grid @grid))
