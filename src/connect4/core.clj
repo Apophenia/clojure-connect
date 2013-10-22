@@ -1,11 +1,6 @@
 (ns connect4.core
   (:gen-class))
 
-; TO-DO/TO-LEARN
-; MACROS: Clojure Programming p. 232 (chapter 5)
-; TALK TO ZACH ABOUT: PROTOCOLS because really, ATOMIC VS NON-ATOMIC BOARD, GAMES AND CONCURRENCY,
-; GETTING BETTER AT READING ERRORS/FINDING LINE NUMBERS
-
 (def string-map
  {1 "X", -1 "O", 0 "_" :left-pipe "|" :right-pipe "|"})
 
@@ -15,9 +10,31 @@
 
 (def initial-grid (vec (repeat num-rows (vec (repeat num-columns 0)))))
 
+; TEST GRIDS
+(def test-bottom-row-o-win (apply conj [[-1 -1 -1 -1 0 0 0]] 
+                                       (vec (repeat (dec num-rows) (vec (repeat num-columns 0))))))
+(def test-bottom-row-x-win (apply conj [[1 1 1 1 0 0 0]] 
+                                       (vec (repeat (dec (dec num-rows)) (vec (repeat num-columns 0))))))
+(def test-second-row-o-win (apply conj [[-1 1 -1 1 -1 1 -1][1 1 1 -1 -1 -1 -1]] 
+                                       (vec (repeat (dec (dec num-rows)) (vec (repeat num-columns 0))))))
+(def test-second-row-x-win (apply conj [[1 -1 1 -1 1 -1 -1][-1 -1 -1 1 1 1 1]] 
+                                       (vec (repeat (dec (dec num-rows)) (vec (repeat num-columns 0))))))
+(def test-third-row-x-win (apply conj  [[1 1 -1 1 1 -1 1][-1 1 1 -1 1 1 -1][1 1 1 1 0 -1 -1 -1]]
+                                       (vec (repeat (- num-rows 3)(vec (repeat num-columns 0))))))
+(def test-fourth-row-o-win (apply conj [[1 1 -1 1 1 -1 1][-1 1 1 -1 1 1 -1][1 -1 -1 1 -1 -1 1]]
+                                       (vec (repeat (- num-rows 4)(vec (repeat num-columns 0))))))
 (defn get-cell-value 
   [current-grid [x y]]
   ((current-grid y) x))
+
+(defn get-column [current-grid x]
+  (vec (map #(% x) current-grid)))
+
+(defn win-check [current-grid]
+  (cond (every? zero? (current-grid 3)) )
+
+; (def row [0 1 0 0 0 0 0])
+; (every? zero? row)
 
 (defn draw-cells 
   [row i]
@@ -28,14 +45,15 @@
 
 (defn draw-row
   [current-grid n]
- (if (not= n num-rows) 
-  (do (draw-cells (current-grid n) 0)
+ (if (<= 0 n) 
+  (do
+      (draw-cells (current-grid n) 0)
       (println)
-      (recur current-grid (inc n)))))
+      (recur current-grid (dec n)))))
 
 (defn draw-grid
   [current-grid]
-  (draw-row current-grid 0))
+  (draw-row current-grid (dec num-rows)))
 
 (defn set-cell-value
   [current-grid [x y] value]
@@ -44,7 +62,7 @@
 (defn drop-piece 
   [current-grid x value]
   (loop [y 0]
-    (cond (>= y num-rows) (throw (Exception. "Passed a non-playable row to drop-piece."))
+    (cond (>= y num-rows) (throw (Exception. (str "Passed " y " to function")))
           (zero? (get-cell-value current-grid [x y])) (set-cell-value current-grid [x y] value)
           :else (recur (inc y)))))
 
@@ -69,7 +87,7 @@
 
 (defn game-loop [current-grid current-player other-player]
   (let [next-grid (drop-piece current-grid (make-move current-player current-grid) (:value current-player))]
-    (draw-grid next-grid)
+   (draw-grid next-grid)
    ;(if (game-over? @grid) 
    ;    (println "The game is over")
     (recur next-grid other-player current-player)))
@@ -77,9 +95,13 @@
 (defn -main [& args]
   ; (drop-piece @grid 0 -1)
   ;(set-cell-value grid [0 0] -1)
-  (println (HumanPlayer. "Zach" 1))
+
+  (println test-grid-one)
+  (draw-grid test-grid-one)
+  (println (get-column test-grid-one 1))
    (let [human (HumanPlayer. "Lyndsey" 1)
          computer (ComputerPlayer. -1)]
-        (game-loop initial-grid human computer))
-)
+        (game-loop initial-grid human computer)))
+
+; TEST DRIVEN DEVELOPMENT, GUYS
 
