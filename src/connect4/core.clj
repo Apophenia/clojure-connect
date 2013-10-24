@@ -14,15 +14,17 @@
 (def test-bottom-row-o-win (apply conj [[-1 -1 -1 -1 0 0 0]] 
                                        (vec (repeat (dec num-rows) (vec (repeat num-columns 0))))))
 (def test-bottom-row-x-win (apply conj [[1 1 1 1 0 0 0]] 
-                                       (vec (repeat (dec (dec num-rows)) (vec (repeat num-columns 0))))))
+                                       (vec (repeat (dec num-rows) (vec (repeat num-columns 0))))))
 (def test-second-row-o-win (apply conj [[-1 1 -1 1 -1 1 -1][1 1 1 -1 -1 -1 -1]] 
                                        (vec (repeat (dec (dec num-rows)) (vec (repeat num-columns 0))))))
 (def test-second-row-x-win (apply conj [[1 -1 1 -1 1 -1 -1][-1 -1 -1 1 1 1 1]] 
                                        (vec (repeat (dec (dec num-rows)) (vec (repeat num-columns 0))))))
 (def test-third-row-x-win (apply conj  [[1 1 -1 1 1 -1 1][-1 1 1 -1 1 1 -1][1 1 1 1 0 -1 -1 -1]]
                                        (vec (repeat (- num-rows 3)(vec (repeat num-columns 0))))))
-(def test-fourth-row-o-win (apply conj [[1 1 -1 1 1 -1 1][-1 1 1 -1 1 1 -1][1 -1 -1 1 -1 -1 1]]
+(def test-fourth-row-o-win (apply conj [[1 1 -1 1 1 -1 1][-1 1 1 -1 1 1 -1][1 -1 -1 1 -1 -1 1][1 1 1 -1 -1 -1 -1]]
                                        (vec (repeat (- num-rows 4)(vec (repeat num-columns 0))))))
+(def test-first-column-o-win (apply conj (repeat 4 [-1 0 0 0 0 0 0]) (repeat 2 [0 0 0 0 0 0 0])))
+
 (defn get-cell-value 
   [current-grid [x y]]
   ((current-grid y) x))
@@ -30,8 +32,8 @@
 (defn get-column [current-grid x]
   (vec (map #(% x) current-grid)))
 
-(defn win-check [current-grid]
-  (cond (every? zero? (current-grid 3)) )
+(defn win-check [current-grid])
+  ; (cond (every? zero? (current-grid 3)) )
 
 ; (def row [0 1 0 0 0 0 0])
 ; (every? zero? row)
@@ -92,16 +94,58 @@
    ;    (println "The game is over")
     (recur next-grid other-player current-player)))
 
+(def coord-sequences (list 
+  #(vector (inc %1)(inc %2))
+  #(vector (inc %1)(dec %2))
+  #(vector %1 (dec %2))
+  #(vector (inc %1) %2)))
+
+(defn horizontal-win [current-grid [x y] value]
+  (cond (and (>= x 3) 
+        (= (get-cell-value current-grid [(- x 3) y]) value) 
+        (= (get-cell-value current-grid [(- x 2) y]) value) 
+        (= (get-cell-value current-grid [(- x 1) y]) value)) true
+        (and (>= x 2)(<= x 5) 
+        (= (get-cell-value current-grid [(- x 2) y]) value) 
+        (= (get-cell-value current-grid [(- x 1) y]) value) 
+        (= (get-cell-value current-grid [(+ x 1) y]) value)) true
+        (and (>= x 1) (<= x 4)
+        (= (get-cell-value current-grid [(- x 1) y]) value) 
+        (= (get-cell-value current-grid [(+ x 1) y]) value) 
+        (= (get-cell-value current-grid [(+ x 2) y]) value)) true
+        (and (<= x 3)
+        (= (get-cell-value current-grid [(+ x 1) y]) value)
+        (= (get-cell-value current-grid [(+ x 2) y]) value)
+        (= (get-cell-value current-grid [(+ x 3) y]) value)) true
+        :else false))
+
+(defn vertical-win [current-grid [x y] value]
+  (cond (and (>= y 3) 
+        (= (get-cell-value current-grid [x (- y 3)]) value) 
+        (= (get-cell-value current-grid [x (- y 2)]) value) 
+        (= (get-cell-value current-grid [x (- y 1)]) value)) true
+        :else false))
+
 (defn -main [& args]
   ; (drop-piece @grid 0 -1)
   ;(set-cell-value grid [0 0] -1)
-
-  (println test-grid-one)
-  (draw-grid test-grid-one)
-  (println (get-column test-grid-one 1))
-   (let [human (HumanPlayer. "Lyndsey" 1)
-         computer (ComputerPlayer. -1)]
-        (game-loop initial-grid human computer)))
+(draw-grid test-bottom-row-o-win)
+(assert (horizontal-win test-bottom-row-o-win [1 0] -1))
+(draw-grid test-bottom-row-o-win)
+(assert (horizontal-win test-bottom-row-o-win [0 0] -1))
+(draw-grid test-bottom-row-x-win)
+(assert (horizontal-win test-bottom-row-o-win [1 0] -1))
+(draw-grid test-bottom-row-x-win)
+(assert (horizontal-win test-bottom-row-x-win [0 0] 1))
+(draw-grid test-second-row-x-win)
+(assert (horizontal-win test-second-row-x-win [6 1] 1))
+(draw-grid test-second-row-o-win)
+(assert (horizontal-win test-second-row-o-win [5 1] -1))
+(draw-grid test-third-row-x-win)
+(assert (horizontal-win test-third-row-x-win [3 2] 1))
+(draw-grid test-fourth-row-o-win)
+(assert (horizontal-win test-fourth-row-o-win [4 3] -1))
+(draw-grid test-first-column-o-win))
+;(assert (vertical-win test-first-column-o-win [0, 0] -1))
 
 ; TEST DRIVEN DEVELOPMENT, GUYS
-
