@@ -94,30 +94,45 @@
    ;    (println "The game is over")
     (recur next-grid other-player current-player)))
 
+(defn abs [x]
+  (if (neg? x)
+      (* -1 x)
+      x))
+
+(defn diag-test-up [x y]
+  (if (or (< x 3)(< y 3))
+    (if (< x y)
+        (vector 0 (abs (- x y)))
+        (vector (abs (- x y) 0)))
+    (vector (- x 3)(- y 3))))
+
+(defn diag-test-down [x y]
+  (if (or (< x 3)(> y 3))
+
 (def coord-sequences (list 
-  #(vector (inc %1)(inc %2))
-  #(vector (inc %1)(dec %2))
-  #(vector %1 (dec %2))
+  '(#(vector (- %1 %3)(- %2 %3)) #(vector (inc %1)(inc %2)))
+  '(#(vector (- %1 %3)(+ %2 %3)) #(vector (inc %1)(dec %2)))
+  '(#(vector %1 (- %2 %3)) #(vector %1 (dec %2))
   #(vector (inc %1) %2)))
 
-(defn horizontal-win [current-grid [x y] value]
-  (cond (and (>= x 3) 
-        (= (get-cell-value current-grid [(- x 3) y]) value) 
-        (= (get-cell-value current-grid [(- x 2) y]) value) 
-        (= (get-cell-value current-grid [(- x 1) y]) value)) true
-        (and (>= x 2)(<= x 5) 
-        (= (get-cell-value current-grid [(- x 2) y]) value) 
-        (= (get-cell-value current-grid [(- x 1) y]) value) 
-        (= (get-cell-value current-grid [(+ x 1) y]) value)) true
-        (and (>= x 1) (<= x 4)
-        (= (get-cell-value current-grid [(- x 1) y]) value) 
-        (= (get-cell-value current-grid [(+ x 1) y]) value) 
-        (= (get-cell-value current-grid [(+ x 2) y]) value)) true
-        (and (<= x 3)
-        (= (get-cell-value current-grid [(+ x 1) y]) value)
-        (= (get-cell-value current-grid [(+ x 2) y]) value)
-        (= (get-cell-value current-grid [(+ x 3) y]) value)) true
-        :else false))
+; (defn horizontal-win [current-grid [x y] value]
+;   (cond (and (>= x 3) 
+;         (= (get-cell-value current-grid [(- x 3) y]) value) 
+;         (= (get-cell-value current-grid [(- x 2) y]) value) 
+;         (= (get-cell-value current-grid [(- x 1) y]) value)) true
+;         (and (>= x 2)(<= x 5) 
+;         (= (get-cell-value current-grid [(- x 2) y]) value) 
+;         (= (get-cell-value current-grid [(- x 1) y]) value) 
+;         (= (get-cell-value current-grid [(+ x 1) y]) value)) true
+;         (and (>= x 1) (<= x 4)
+;         (= (get-cell-value current-grid [(- x 1) y]) value) 
+;         (= (get-cell-value current-grid [(+ x 1) y]) value) 
+;         (= (get-cell-value current-grid [(+ x 2) y]) value)) true
+;         (and (<= x 3)
+;         (= (get-cell-value current-grid [(+ x 1) y]) value)
+;         (= (get-cell-value current-grid [(+ x 2) y]) value)
+;         (= (get-cell-value current-grid [(+ x 3) y]) value)) true
+;         :else false))
 
 (defn vertical-win [current-grid [x y] value]
   (cond (and (>= y 3) 
