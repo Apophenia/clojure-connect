@@ -103,36 +103,47 @@
   (if (or (< x 3)(< y 3))
     (if (< x y)
         (vector 0 (abs (- x y)))
-        (vector (abs (- x y) 0)))
+        (vector (abs (- x y) 0))) 
     (vector (- x 3)(- y 3))))
 
-(defn diag-test-down [x y]
-  (if (or (< x 3)(> y 3))
+;(defn diag-test-down [x y]
+;  (if (or (< x 3)(> y 3))))
 
-(def coord-sequences (list 
-  '(#(vector (- %1 %3)(- %2 %3)) #(vector (inc %1)(inc %2)))
-  '(#(vector (- %1 %3)(+ %2 %3)) #(vector (inc %1)(dec %2)))
-  '(#(vector %1 (- %2 %3)) #(vector %1 (dec %2))
-  #(vector (inc %1) %2)))
+;(defn up-diag-row-generator [y]
+;  )
 
-; (defn horizontal-win [current-grid [x y] value]
-;   (cond (and (>= x 3) 
-;         (= (get-cell-value current-grid [(- x 3) y]) value) 
-;         (= (get-cell-value current-grid [(- x 2) y]) value) 
-;         (= (get-cell-value current-grid [(- x 1) y]) value)) true
-;         (and (>= x 2)(<= x 5) 
-;         (= (get-cell-value current-grid [(- x 2) y]) value) 
-;         (= (get-cell-value current-grid [(- x 1) y]) value) 
-;         (= (get-cell-value current-grid [(+ x 1) y]) value)) true
-;         (and (>= x 1) (<= x 4)
-;         (= (get-cell-value current-grid [(- x 1) y]) value) 
-;         (= (get-cell-value current-grid [(+ x 1) y]) value) 
-;         (= (get-cell-value current-grid [(+ x 2) y]) value)) true
-;         (and (<= x 3)
-;         (= (get-cell-value current-grid [(+ x 1) y]) value)
-;         (= (get-cell-value current-grid [(+ x 2) y]) value)
-;         (= (get-cell-value current-grid [(+ x 3) y]) value)) true
-;         :else false))
+(defn up-diag-from [x y]
+  "(up-diag-from 0 0) -> ([0 0] [1 1] [2 2] [3 3])"
+  (take 4 (iterate (fn [[x y]] [(inc x)(inc y)])
+                   [x y])))
+
+(defn down-diag-from [x y]
+  (take 4 (iterate (fn [[x y]] [(inc x)(dec y)])
+                   [x y])))
+
+;(defn generate-up-diags []
+;  )
+
+;(def coord-sequences (list 
+  ; obsolete functions:
+  ; (#(vector (- %1 %3)(- %2 %3))
+  ; (#(vector (- %1 %3)(+ %2 %3))
+  ; (#(vector %1 (- %2 %3))
+  
+  ; up-diagonal
+  (fn [[x y]]
+    [(inc x)(inc y)])
+
+   #(vector (inc %1)(inc %2))
+   
+   ; down-diagonal
+   #(vector (inc %1)(dec %2))
+   
+   ; vertical
+   #(vector %1 (dec %2))
+   
+   ; horizontal
+   #(vector (inc %1) %2)
 
 (defn vertical-win [current-grid [x y] value]
   (cond (and (>= y 3) 
@@ -142,25 +153,26 @@
         :else false))
 
 (defn -main [& args]
-  ; (drop-piece @grid 0 -1)
-  ;(set-cell-value grid [0 0] -1)
-(draw-grid test-bottom-row-o-win)
-(assert (horizontal-win test-bottom-row-o-win [1 0] -1))
-(draw-grid test-bottom-row-o-win)
-(assert (horizontal-win test-bottom-row-o-win [0 0] -1))
-(draw-grid test-bottom-row-x-win)
-(assert (horizontal-win test-bottom-row-o-win [1 0] -1))
-(draw-grid test-bottom-row-x-win)
-(assert (horizontal-win test-bottom-row-x-win [0 0] 1))
-(draw-grid test-second-row-x-win)
-(assert (horizontal-win test-second-row-x-win [6 1] 1))
-(draw-grid test-second-row-o-win)
-(assert (horizontal-win test-second-row-o-win [5 1] -1))
-(draw-grid test-third-row-x-win)
-(assert (horizontal-win test-third-row-x-win [3 2] 1))
-(draw-grid test-fourth-row-o-win)
-(assert (horizontal-win test-fourth-row-o-win [4 3] -1))
-(draw-grid test-first-column-o-win))
-;(assert (vertical-win test-first-column-o-win [0, 0] -1))
+;;  (drop-piece @grid 0 -1)
+;;  (set-cell-value grid [0 0] -1)
+;; (draw-grid test-bottom-row-o-win)
+;; (assert (horizontal-win test-bottom-row-o-win [1 0] -1))
+;; (draw-grid test-bottom-row-o-win)
+;; (assert (horizontal-win test-bottom-row-o-win [0 0] -1))
+;; (draw-grid test-bottom-row-x-win)
+;; (assert (horizontal-win test-bottom-row-o-win [1 0] -1))
+;; (draw-grid test-bottom-row-x-win)
+;; (assert (horizontal-win test-bottom-row-x-win [0 0] 1))
+;; (draw-grid test-second-row-x-win)
+;; (assert (horizontal-win test-second-row-x-win [6 1] 1))
+;; (draw-grid test-second-row-o-win)
+;; (assert (horizontal-win test-second-row-o-win [5 1] -1))
+;; (draw-grid test-third-row-x-win)
+;; (assert (horizontal-win test-third-row-x-win [3 2] 1))
+;; (draw-grid test-fourth-row-o-win)
+;; (assert (horizontal-win test-fourth-row-o-win [4 3] -1))
+;; (draw-grid test-first-column-o-win))
+;; (assert (vertical-win test-first-column-o-win [0, 0] -1))
 
-; TEST DRIVEN DEVELOPMENT, GUYS
+;; TEST DRIVEN DEVELOPMENT, GUYS
+)
