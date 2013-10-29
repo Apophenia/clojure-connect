@@ -25,20 +25,23 @@
                                        (vec (repeat (- num-rows 4)(vec (repeat num-columns 0))))))
 (def test-first-column-o-win (apply conj (repeat 4 [-1 0 0 0 0 0 0]) (repeat 2 [0 0 0 0 0 0 0])))
 
-(defn get-cell-value 
+(defn get-cell-value
+"Returns the value of a given cell" 
   [current-grid [x y]]
   ((current-grid y) x))
 
 (defn get-column [current-grid x]
+"Returns the specified column in vector form"
   (vec (map #(% x) current-grid)))
 
 (defn win-check [current-grid])
-  ; (cond (every? zero? (current-grid 3)) )
+; (cond (every? zero? (current-grid 3)) )
 
 ; (def row [0 1 0 0 0 0 0])
 ; (every? zero? row)
 
-(defn draw-cells 
+(defn draw-cells
+"Draws (via printing) a row of cells"
   [row i]
   (if (not= i num-columns)
     (do (print (string-map :left-pipe) (string-map (row i)))
@@ -46,6 +49,7 @@
     (print (string-map :right-pipe))))
 
 (defn draw-row
+"Draws (via printing) a horizontal row by calling draw-cells the appropriate number of times"
   [current-grid n]
  (if (<= 0 n) 
   (do
@@ -54,14 +58,17 @@
       (recur current-grid (dec n)))))
 
 (defn draw-grid
+"Draws (via printing) a game grid"
   [current-grid]
   (draw-row current-grid (dec num-rows)))
 
 (defn set-cell-value
+"Given coordinates and a player value, sets the value of a cell and returns an updated board"
   [current-grid [x y] value]
    (assoc-in current-grid [y x] value))
 
-(defn drop-piece 
+(defn drop-piece
+"Given column number x and a player value, drops a piece into the lowest available spot in a column and returns the new board"
   [current-grid x value]
   (loop [y 0]
     (cond (>= y num-rows) (throw (Exception. (str "Passed " y " to function")))
@@ -69,6 +76,7 @@
           :else (recur (inc y)))))
 
 (defn column-open?
+"Returns true if a column contains a playable space"
   [current-grid x]
   (zero? (get-cell-value current-grid [x 0])))
 
@@ -86,13 +94,6 @@
 (defrecord ComputerPlayer [value]
   Player
   (make-move [player-type current-grid] 0))
-
-(defn game-loop [current-grid current-player other-player]
-  (let [next-grid (drop-piece current-grid (make-move current-player current-grid) (:value current-player))]
-   (draw-grid next-grid)
-   ;(if (game-over? @grid) 
-   ;    (println "The game is over")
-    (recur next-grid other-player current-player)))
 
 (defn abs [x]
   (if (neg? x)
@@ -151,6 +152,14 @@
         (= (get-cell-value current-grid [x (- y 2)]) value) 
         (= (get-cell-value current-grid [x (- y 1)]) value)) true
         :else false))
+
+(defn game-loop [current-grid current-player other-player]
+"Defines the main game automation" 
+ (let [next-grid (drop-piece current-grid (make-move current-player current-grid) (:value current-player))]
+   (draw-grid next-grid)
+   ;(if (game-over? @grid) 
+   ;    (println "The game is over")
+    (recur next-grid other-player current-player)))
 
 (defn -main [& args]
 ;;  (drop-piece @grid 0 -1)
