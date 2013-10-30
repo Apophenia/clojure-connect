@@ -100,30 +100,42 @@
       (* -1 x)
       x))
 
-(defn diag-test-up [x y]
-  (if (or (< x 3)(< y 3))
-    (if (< x y)
-        (vector 0 (abs (- x y)))
-        (vector (abs (- x y) 0))) 
-    (vector (- x 3)(- y 3))))
+;; (defn diag-test-up [x y]
+;;   (if (or (< x 3)(< y 3))
+;;     (if (< x y)
+;;         (vector 0 (abs (- x y)))
+;;         (vector (abs (- x y) 0))) 
+;;     (vector (- x 3)(- y 3))))
 
 ;(defn diag-test-down [x y]
 ;  (if (or (< x 3)(> y 3))))
 
 ;(defn up-diag-row-generator [y]
 ;  )
+(defn up-diag [[x y]] [(inc x)(inc y)])
+(defn down-diag [[x y]] [(inc x)(dec y)])
+(defn horizontal [[x y]] [(inc x) y])
+(defn vertical [[x y]] [x (inc y)])
 
-(defn up-diag-from [x y]
-  "(up-diag-from 0 0) -> ([0 0] [1 1] [2 2] [3 3])"
-  (take 4 (iterate (fn [[x y]] [(inc x)(inc y)])
-                   [x y])))
+(defn run-from [x y f]
+  "(run-from 0 0 up-diag) -> ([0 0] [1 1] [2 2] [3 3])"
+  (take 4 (iterate f [x y])))
 
-(defn down-diag-from [x y]
-  (take 4 (iterate (fn [[x y]] [(inc x)(dec y)])
-                   [x y])))
+(defn generate-runs [f x-range y-range]
+  "Generates a list of all possible up-diagonals"
+  (for [x x-range
+        y y-range]
+    (run-from x y f)))
 
-;(defn generate-up-diags []
-;  )
+(def all-runs
+  (concat (generate-runs up-diag (range 4) (range 3))
+          (generate-runs down-diag (range 4) (range 3 6))
+          (generate-runs horizontal (range 4) (range 6))
+          (generate-runs vertical (range 7)(range 3))))
+
+(defn get-run-values [run board]
+
+(generate-runs down-diag (range 4)(range 3 6))
 
 ;(def coord-sequences (list 
   ; obsolete functions:
@@ -183,5 +195,4 @@
 ;; (draw-grid test-first-column-o-win))
 ;; (assert (vertical-win test-first-column-o-win [0, 0] -1))
 
-;; TEST DRIVEN DEVELOPMENT, GUYS
 )
