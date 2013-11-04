@@ -19,7 +19,7 @@
 
 
 (deftest horizontal-win-test
-  (testing "FIXME, I fail."
+  (testing "Testing for a horizontal win."
     (assert (horizontal-win test-bottom-row-o-win [1 0] -1))
     (assert (horizontal-win test-bottom-row-o-win [0 0] -1))
     (assert (horizontal-win test-bottom-row-o-win [1 0] -1))
