@@ -70,7 +70,8 @@
 (defn draw-grid
   "Draws (via printing) a game grid"
   [current-grid]
-  (draw-row current-grid (dec num-rows)))
+  (do (draw-row current-grid (dec num-rows))
+      (println "  0  1  2  3  4  5  6")))
 
 (defn set-cell-value
   "Given coordinates and a player value, sets the value of a cell and returns an updated board"
@@ -89,18 +90,26 @@ lowest available spot in a column and returns the new board"
 (defn column-open?
   "Returns true if a column contains a playable space"
   [current-grid x]
-  (zero? (get-cell-value current-grid [x 0])))
+  (zero? (get-cell-value current-grid [x (dec num-rows)])))
 
 (defn game-over? [current-grid]
   (win-check current-grid))
 
 (defprotocol Player
   "This defines a way to make a move in the game."
-  (make-move [player-type current-grid]))
+  (make-move [player-type current-grid] 0))
 
 (defrecord HumanPlayer [player-name value]
   Player
-  (make-move [player-type current-grid] 0))
+  (make-move [player-type current-grid] 
+    (do (println "Make a move please, person.")
+    (loop [column-selection (read-string (read-line))]
+      (if (and (integer? column-selection) (not (neg? column-selection)) (< column-selection 7))
+        (if (column-open? current-grid column-selection) column-selection 
+            (do (println "Column is full. Select another column.")
+                (recur (read-string (read-line)))))
+        (do (println "Invalid column choice. Input 0-6.")
+            (recur (read-string (read-line)))))))))
 
 (defrecord ComputerPlayer [value]
   Player
@@ -112,12 +121,12 @@ lowest available spot in a column and returns the new board"
     x))
 
 (defn game-loop [current-grid current-player other-player]
-  "Defines the main game automation" 
-  (let [next-grid (drop-piece current-grid (make-move current-player current-grid) (:value current-player))]
-    (draw-grid next-grid)
-                                        ;(if (game-over? @grid) 
-                                        ;    (println "The game is over")
-    (recur next-grid other-player current-player)))
+  "Defines the main game automation"
+  (if (win-check current-grid) 
+    (do (println "The game is over.")
+        (draw-grid))
+      (do (draw-grid current-grid)
+          (let [next-grid (drop-piece current-grid (make-move current-player current-grid) (:value current-player))]
+            (recur next-grid other-player current-player)))))
 
-(defn -main [& args]
-  nil)
+(defn -main [& args])
