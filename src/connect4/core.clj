@@ -100,18 +100,6 @@
       (* -1 x)
       x))
 
-;; (defn diag-test-up [x y]
-;;   (if (or (< x 3)(< y 3))
-;;     (if (< x y)
-;;         (vector 0 (abs (- x y)))
-;;         (vector (abs (- x y) 0))) 
-;;     (vector (- x 3)(- y 3))))
-
-;(defn diag-test-down [x y]
-;  (if (or (< x 3)(> y 3))))
-
-;(defn up-diag-row-generator [y]
-;  )
 (defn up-diag [[x y]] [(inc x)(inc y)])
 (defn down-diag [[x y]] [(inc x)(dec y)])
 (defn horizontal [[x y]] [(inc x) y])
@@ -135,28 +123,7 @@
 
 (defn get-run-values [run board]
 
-(generate-runs down-diag (range 4)(range 3 6))
 
-;(def coord-sequences (list 
-  ; obsolete functions:
-  ; (#(vector (- %1 %3)(- %2 %3))
-  ; (#(vector (- %1 %3)(+ %2 %3))
-  ; (#(vector %1 (- %2 %3))
-  
-  ; up-diagonal
-  (fn [[x y]]
-    [(inc x)(inc y)])
-
-   #(vector (inc %1)(inc %2))
-   
-   ; down-diagonal
-   #(vector (inc %1)(dec %2))
-   
-   ; vertical
-   #(vector %1 (dec %2))
-   
-   ; horizontal
-   #(vector (inc %1) %2)
 
 (defn vertical-win [current-grid [x y] value]
   (cond (and (>= y 3) 
