@@ -15,6 +15,9 @@
   [current-grid [x y]]
   (nth (nth current-grid y) x))
 
+(defn get-column [current-grid x]
+  (vec (map #(nth % x) current-grid))) 
+  
 (defn get-run-vals [run grid]
   "Returns the values of a run as a vector => [1 1 1 1]"
   (for [coords run]
@@ -82,15 +85,30 @@
   "Given column number x and a player value, drops a piece into the 
 lowest available spot in a column and returns the new board"
   [current-grid x value]
-  (loop [y 0]
-    (cond (>= y num-rows) (throw (Exception. (str "Passed " y " to function")))
-          (zero? (get-cell-value current-grid [x y])) (set-cell-value current-grid [x y] value)
-          :else (recur (inc y)))))
+       (loop [y 0]
+        (cond (>= y num-rows) (throw (Exception. (str "Passed " y " to function")))
+              (zero? (get-cell-value current-grid [x y])) (set-cell-value current-grid [x y] value)
+              :else (recur (inc y)))))
 
 (defn column-open?
   "Returns true if a column contains a playable space"
   [current-grid x]
   (zero? (get-cell-value current-grid [x (dec num-rows)])))
+
+(defn tie? [current-grid] 
+(not-any? zero? (current-grid (dec num-rows))))
+
+(defn minimax [current-grid current-player other-player]
+  (cond (win-check current-grid) 1
+        (tie? current-grid) 0
+        :else 
+        (first (apply max-key
+                      last 
+                      (for [x (filter (partial column-open? current-grid) (range num-columns))
+                            :let [y (- (minimax (drop-piece current-grid x (:value current-player)) 
+                                                other-player 
+                                                current-player))]]
+                                                    [x y])))))    
 
 (defn game-over? [current-grid]
   (win-check current-grid))
@@ -113,20 +131,22 @@ lowest available spot in a column and returns the new board"
 
 (defrecord ComputerPlayer [value]
   Player
-  (make-move [player-type current-grid] 0))
-
-(defn abs [x]
-  (if (neg? x)
-    (* -1 x)
-    x))
+  (make-move [player-type current-grid] 
+    (loop [column-selection 0]
+      (if (column-open? current-grid column-selection) column-selection 
+          (recur (inc column-selection))))))
 
 (defn game-loop [current-grid current-player other-player]
   "Defines the main game automation"
-  (if (win-check current-grid) 
+  (if (or (win-check current-grid) (tie? current-grid))   
     (do (println "The game is over.")
-        (draw-grid))
+        (draw-grid current-grid))
       (do (draw-grid current-grid)
           (let [next-grid (drop-piece current-grid (make-move current-player current-grid) (:value current-player))]
             (recur next-grid other-player current-player)))))
 
-(defn -main [& args])
+(def joe (ComputerPlayer. -1))
+(def denis (HumanPlayer. "Denis" 1))
+
+(defn -main [& args]
+(game-loop initial-grid joe denis))
