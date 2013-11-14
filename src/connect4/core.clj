@@ -11,13 +11,13 @@
 (def initial-grid (vec (repeat num-rows (vec (repeat num-columns 0)))))
 
 (defn get-cell-value
-  "Returns the value of a given cell" 
+  "Returns the value of a given cell"
   [current-grid [x y]]
   (nth (nth current-grid y) x))
 
 (defn get-column [current-grid x]
-  (vec (map #(nth % x) current-grid))) 
-  
+  (vec (map #(nth % x) current-grid)))
+
 (defn get-run-vals [run grid]
   "Returns the values of a run as a vector => [1 1 1 1]"
   (for [coords run]
@@ -51,7 +51,8 @@
                        (and (not (zero? a))
                             (= a b c d)))
                      all-run-vals)]
-    (not (empty? wins))))
+    (if (not (empty? wins)) (first (first wins))
+      nil)))
 
 (defn draw-cells
   "Draws (via printing) a row of cells"
@@ -64,7 +65,7 @@
 (defn draw-row
   "Draws (via printing) a horizontal row by calling draw-cells the appropriate number of times"
   [current-grid n]
-  (if (<= 0 n) 
+  (if (<= 0 n)
     (do
       (draw-cells (current-grid n) 0)
       (println)
@@ -82,7 +83,7 @@
   (assoc-in current-grid [y x] value))
 
 (defn drop-piece
-  "Given column number x and a player value, drops a piece into the 
+"Given column number x and a player value, drops a piece into the
 lowest available spot in a column and returns the new board"
   [current-grid x value]
        (loop [y 0]
@@ -95,20 +96,30 @@ lowest available spot in a column and returns the new board"
   [current-grid x]
   (zero? (get-cell-value current-grid [x (dec num-rows)])))
 
-(defn tie? [current-grid] 
+(defn tie? [current-grid]
 (not-any? zero? (current-grid (dec num-rows))))
 
-(defn minimax [current-grid current-player other-player]
-  (cond (win-check current-grid) 1
-        (tie? current-grid) 0
-        :else 
-        (first (apply max-key
-                      last 
-                      (for [x (filter (partial column-open? current-grid) (range num-columns))
-                            :let [y (- (minimax (drop-piece current-grid x (:value current-player)) 
-                                                other-player 
-                                                current-player))]]
-                                                    [x y])))))    
+(defn open-columns [current-grid]
+  (filter
+   (partial column-open? current-grid)
+   (range num-columns)))
+
+;; TODO: Determine a Clojuresque way to avoid generating trash values in the return tuple?
+(defn minimax* [current-grid current-player other-player]
+  (let [win (win-check current-grid)]
+    (cond  (= win (:value current-player)) [nil 1]
+           (= win (:value other-player)) [nil -1]
+           (tie? current-grid) [nil 0]
+           :else
+           (let [possible-moves (for [col (open-columns current-grid)
+                                      :let [[_col score] (minimax* (drop-piece current-grid col (:value current-player))
+                                                                   other-player
+                                                                   current-player)]]
+                                  [col (- score)])]
+             (apply max-key second possible-moves)))))
+
+(defn minimax [& args]
+  (first (apply minimax* args)))
 
 (defn game-over? [current-grid]
   (win-check current-grid))
@@ -119,11 +130,11 @@ lowest available spot in a column and returns the new board"
 
 (defrecord HumanPlayer [player-name value]
   Player
-  (make-move [player-type current-grid] 
+  (make-move [player-type current-grid]
     (do (println "Make a move please, person.")
     (loop [column-selection (read-string (read-line))]
       (if (and (integer? column-selection) (not (neg? column-selection)) (< column-selection 7))
-        (if (column-open? current-grid column-selection) column-selection 
+        (if (column-open? current-grid column-selection) column-selection
             (do (println "Column is full. Select another column.")
                 (recur (read-string (read-line)))))
         (do (println "Invalid column choice. Input 0-6.")
@@ -131,14 +142,14 @@ lowest available spot in a column and returns the new board"
 
 (defrecord ComputerPlayer [value]
   Player
-  (make-move [player-type current-grid] 
+  (make-move [player-type current-grid]
     (loop [column-selection 0]
-      (if (column-open? current-grid column-selection) column-selection 
+      (if (column-open? current-grid column-selection) column-selection
           (recur (inc column-selection))))))
 
 (defn game-loop [current-grid current-player other-player]
   "Defines the main game automation"
-  (if (or (win-check current-grid) (tie? current-grid))   
+  (if (or (win-check current-grid) (tie? current-grid))
     (do (println "The game is over.")
         (draw-grid current-grid))
       (do (draw-grid current-grid)
