@@ -57,8 +57,8 @@
                            [-1 1 -1 1 -1 1 -1]
                            [-1 1 -1 1 -1 1 -1]])
 
-(defn minimax-win [starting-grid current-player other-player]
-  (let [best-move (minimax starting-grid current-player other-player),
+(defn minimax-win [starting-grid current-player other-player x]
+  (let [best-move (minimax starting-grid current-player other-player x),
         result-grid (drop-piece starting-grid best-move (:value current-player))]
     (do (draw-grid starting-grid)
      (draw-grid result-grid)
@@ -72,7 +72,7 @@
                                   (nth tied-board (inc empty-row-n)))
                             (repeat empty-pieces-n 0))]
     (into [] (concat board
-                     (vector (vec partial-row)) ;; ... :<
+                     [(vec partial-row)]
                      (repeat empty-row-n (vec (repeat 7 0)))))))
 
 (deftest win-test
@@ -80,6 +80,6 @@
     (is (= (win-check bottom-row-o-win) -1))
     (is (= (win-check bottom-row-x-win) 1))
     (is (= (win-check second-row-o-win) -1))
-   (doseq [x (range 1 11)]
+   (doseq [x (range 1 15)]
         (println "now running with" x "spaces open:")
-         (time (is (minimax-win (partial-board x) denis joe))))))
+         (time (is (minimax-win (partial-board x) denis joe 5))))))

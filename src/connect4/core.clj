@@ -104,19 +104,25 @@ lowest available spot in a column and returns the new board"
    (partial column-open? current-grid)
    (range num-columns)))
 
-;; TODO: Determine a Clojuresque way to avoid generating trash values in the return tuple?
-(defn minimax* [current-grid current-player other-player]
-  (let [win (win-check current-grid)]
-    (cond  (= win (:value current-player)) [nil 1]
-           (= win (:value other-player)) [nil -1]
-           (tie? current-grid) [nil 0]
-           :else
-           (let [possible-moves (for [col (open-columns current-grid)
-                                      :let [[_col score] (minimax* (drop-piece current-grid col (:value current-player))
-                                                                   other-player
-                                                                   current-player)]]
-                                  [col (- score)])]
-             (apply max-key second possible-moves)))))
+;; TODO: optimally, pass in just the player values rather than the players themselves.
+;; Minimax doesn't need to continually access the values of the records.
+(defn minimax*
+ ([current-grid current-player other-player]
+     (minimax* current-grid current-player other-player 5))
+ ([current-grid current-player other-player curr-depth]
+     (let [win (win-check current-grid)]
+       (cond  (= win (:value current-player)) [nil 1]
+              (= win (:value other-player)) [nil -1]
+              (tie? current-grid) [nil 0]
+              :else
+              (if (zero? curr-depth) [(first (open-columns current-grid)) 0]
+                  (let [possible-moves (for [col (open-columns current-grid)
+                                             :let [[_col score] (minimax* (drop-piece current-grid col (:value current-player))
+                                                                          other-player
+                                                                          current-player
+                                                                          (dec curr-depth))]]
+                                         [col (- score)])]
+                    (apply max-key second possible-moves)))))))
 
 (defn minimax [& args]
   (first (apply minimax* args)))
@@ -126,11 +132,11 @@ lowest available spot in a column and returns the new board"
 
 (defprotocol Player
   "This defines a way to make a move in the game."
-  (make-move [player-type current-grid] 0))
+  (make-move [this other-player current-grid]))
 
 (defrecord HumanPlayer [player-name value]
   Player
-  (make-move [player-type current-grid]
+  (make-move [this other-player current-grid]
     (do (println "Make a move please, person.")
     (loop [column-selection (read-string (read-line))]
       (if (and (integer? column-selection) (not (neg? column-selection)) (< column-selection 7))
@@ -142,19 +148,17 @@ lowest available spot in a column and returns the new board"
 
 (defrecord ComputerPlayer [value]
   Player
-  (make-move [player-type current-grid]
-    (loop [column-selection 0]
-      (if (column-open? current-grid column-selection) column-selection
-          (recur (inc column-selection))))))
+  (make-move [this other-player current-grid]
+    (minimax current-grid this other-player)))
 
 (defn game-loop [current-grid current-player other-player]
   "Defines the main game automation"
   (if (or (win-check current-grid) (tie? current-grid))
     (do (println "The game is over.")
         (draw-grid current-grid))
-      (do (draw-grid current-grid)
-          (let [next-grid (drop-piece current-grid (make-move current-player current-grid) (:value current-player))]
-            (recur next-grid other-player current-player)))))
+    (do (draw-grid current-grid)
+        (let [next-grid (drop-piece current-grid (make-move current-player other-player current-grid) (:value current-player))]
+          (recur next-grid other-player current-player)))))
 
 (def joe (ComputerPlayer. -1))
 (def denis (HumanPlayer. "Denis" 1))
