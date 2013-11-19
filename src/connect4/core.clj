@@ -104,6 +104,22 @@ lowest available spot in a column and returns the new board"
    (partial column-open? current-grid)
    (range num-columns)))
 
+(defn analyze-run [run-values v]
+  (condp = run-values
+    [v v v 0] 5
+    [0 v v v] 5
+    [v v 0 v] 5
+    [v 0 v v] 5
+    [v v 0 0] 2
+    [v 0 0 v] 2
+    [0 0 v v] 2
+    [0 v v 0] 3
+    0))
+
+(defn analyze-board [current-grid value]
+ (let [results (for [run all-runs]
+                (analyze-run (get-run-vals run current-grid) value))]
+   (reduce + results)))
 ;; TODO: optimally, pass in just the player values rather than the players themselves.
 ;; Minimax doesn't need to continually access the values of the records.
 (defn minimax*
@@ -115,7 +131,7 @@ lowest available spot in a column and returns the new board"
               (= win (:value other-player)) [nil -1]
               (tie? current-grid) [nil 0]
               :else
-              (if (zero? curr-depth) [(first (open-columns current-grid)) 0]
+              (if (zero? curr-depth) [nil (analyze-board current-grid (:value current-player))]
                   (let [possible-moves (for [col (open-columns current-grid)
                                              :let [[_col score] (minimax* (drop-piece current-grid col (:value current-player))
                                                                           other-player
